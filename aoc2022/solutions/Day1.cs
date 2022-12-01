@@ -33,5 +33,7 @@ internal class Day1 : ASolution
 
             elf += c;
         }
+
+        yield return elf;
     }
 }
