@@ -1,6 +1,6 @@
 ﻿namespace aoc2022.solutions;
 
-internal class Day2 : ASolution
+public class Day2 : ASolution
 {
     public Day2(bool testInput) : base(testInput) { }
 
