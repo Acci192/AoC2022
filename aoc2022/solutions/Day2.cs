@@ -18,7 +18,14 @@ public class Day2 : ASolution
 
     public override string B()
     {
-        return string.Empty;
+        var rounds = GetRounds_B();
+
+        var sum = 0;
+        foreach (var round in rounds)
+        {
+            sum += CalculateRoundB(round);
+        }
+        return sum.ToString();
     }
 
     public static int CalculateRound(Round round)
@@ -58,6 +65,37 @@ public class Day2 : ASolution
         return sum;
     }
 
+    public static int CalculateRoundB(RoundB round)
+    {
+        var sum = 0;
+
+        switch (round.Outcome)
+        {
+            case Outcome.Loss when round.Opponent is Shape.Rock:
+                return 3;
+            case Outcome.Loss when round.Opponent is Shape.Paper:
+                return 1;
+            case Outcome.Loss when round.Opponent is Shape.Scissor:
+                return 2;
+            case Outcome.Draw when round.Opponent is Shape.Rock:
+                return 4;
+            case Outcome.Draw when round.Opponent is Shape.Paper:
+                return 5;
+            case Outcome.Draw when round.Opponent is Shape.Scissor:
+                return 6;
+            case Outcome.Win when round.Opponent is Shape.Rock:
+                return 8;
+            case Outcome.Win when round.Opponent is Shape.Paper:
+                return 9;
+            case Outcome.Win when round.Opponent is Shape.Scissor:
+                return 7;
+            default:
+                break;
+        }
+
+        return sum;
+    }
+
     public IEnumerable<Round> GetRounds()
     {
         foreach(var row in Input)
@@ -65,6 +103,16 @@ public class Day2 : ASolution
             var split = row.Split(' ');
 
             yield return new Round(GetShape(split[0]), GetShape(split[1]));
+        }
+    }
+
+    public IEnumerable<RoundB> GetRounds_B()
+    {
+        foreach(var row in Input)
+        {
+            var split = row.Split(' ');
+
+            yield return new RoundB(GetShape(split[0]), GetOutcome(split[1]));
         }
     }
 
@@ -78,9 +126,22 @@ public class Day2 : ASolution
             _ => Shape.Unknown,
         };
     }
+
+
+    public static Outcome GetOutcome(string input)
+    {
+        return input switch
+        {
+            "X" => Outcome.Loss,
+            "Y" => Outcome.Draw,
+            "Z" => Outcome.Win,
+            _ => Outcome.Unknown,
+        };
+    }
 }
 
 public record Round(Shape Opponent, Shape Self);
+public record RoundB(Shape Opponent, Outcome Outcome);
 
 public enum Shape
 {
@@ -88,4 +149,12 @@ public enum Shape
     Rock,
     Paper,
     Scissor
+}
+
+public enum Outcome
+{
+    Unknown,
+    Win,
+    Draw,
+    Loss
 }
