@@ -1,4 +1,6 @@
-﻿namespace aoc2022.solutions;
+﻿using System.Text;
+
+namespace aoc2022.solutions;
 
 public class Day2 : ASolution
 {
@@ -6,119 +8,48 @@ public class Day2 : ASolution
 
     public override string A()
     {
-        var rounds = GetRounds();
-
-        var sum = 0; ;
-        foreach(var round in rounds)
-        {
-            sum += CalculateRound(round);
-        }
-        return sum.ToString();
+        var rounds = Input.Select(x => new Round(x, 'A'));
+        return rounds.Aggregate(0, (sum, next) => sum + next.GetPoints(), sum => sum.ToString());
     }
 
     public override string B()
     {
-        var rounds = GetRounds_B();
-
-        var sum = 0;
-        foreach (var round in rounds)
-        {
-            sum += CalculateRoundB(round);
-        }
-        return sum.ToString();
+        var rounds = Input.Select(x => new Round(x, 'B'));
+        return rounds.Aggregate(0, (sum, next) => sum + next.GetPoints(), sum => sum.ToString());
     }
+}
 
-    public static int CalculateRound(Round round)
+public record Round
+{
+    public Shape Opponent { get; init; }
+    public Shape Self { get; init; }
+    public Outcome RoundOutcome { get; init; }
+
+    public Round(string input, char task)
     {
-        var sum = 0;
-        switch (round.Self)
+        var split = input.Split(' ');
+        Opponent = ParseShape(split[0]);
+
+        if (task == 'A')
         {
-            case Shape.Rock:
-                sum += 1;
-                break;
-            case Shape.Paper:
-                sum += 2;
-                break;
-            case Shape.Scissor:
-                sum += 3;
-                break;
-            default:
-                return int.MinValue;
+            Self = ParseShape(split[1]);
+            RoundOutcome = GetOutcome(Opponent, Self);
         }
-
-        switch (round.Opponent)
+        else if (task == 'B')
         {
-            case Shape.Rock when round.Self is Shape.Paper:
-            case Shape.Paper when round.Self is Shape.Scissor:
-            case Shape.Scissor when round.Self is Shape.Rock:
-                sum += 6;
-                break;
-            case Shape.Rock when round.Self is Shape.Rock:
-            case Shape.Paper when round.Self is Shape.Paper:
-            case Shape.Scissor when round.Self is Shape.Scissor:
-                sum += 3;
-                break;
-            default:
-                break;
-        }
-
-        return sum;
-    }
-
-    public static int CalculateRoundB(RoundB round)
-    {
-        var sum = 0;
-
-        switch (round.Outcome)
-        {
-            case Outcome.Loss when round.Opponent is Shape.Rock:
-                return 3;
-            case Outcome.Loss when round.Opponent is Shape.Paper:
-                return 1;
-            case Outcome.Loss when round.Opponent is Shape.Scissor:
-                return 2;
-            case Outcome.Draw when round.Opponent is Shape.Rock:
-                return 4;
-            case Outcome.Draw when round.Opponent is Shape.Paper:
-                return 5;
-            case Outcome.Draw when round.Opponent is Shape.Scissor:
-                return 6;
-            case Outcome.Win when round.Opponent is Shape.Rock:
-                return 8;
-            case Outcome.Win when round.Opponent is Shape.Paper:
-                return 9;
-            case Outcome.Win when round.Opponent is Shape.Scissor:
-                return 7;
-            default:
-                break;
-        }
-
-        return sum;
-    }
-
-    public IEnumerable<Round> GetRounds()
-    {
-        foreach(var row in Input)
-        {
-            var split = row.Split(' ');
-
-            yield return new Round(GetShape(split[0]), GetShape(split[1]));
+            RoundOutcome = ParseOutcome(split[1]);
+            Self = GetShape(Opponent, RoundOutcome);
         }
     }
 
-    public IEnumerable<RoundB> GetRounds_B()
+    public int GetPoints()
     {
-        foreach(var row in Input)
-        {
-            var split = row.Split(' ');
-
-            yield return new RoundB(GetShape(split[0]), GetOutcome(split[1]));
-        }
+        return (int)Self + (int)RoundOutcome;
     }
 
-    public static Shape GetShape(string input)
+    private static Shape ParseShape(string value)
     {
-        return input switch
+        return value switch
         {
             "A" or "X" => Shape.Rock,
             "B" or "Y" => Shape.Paper,
@@ -127,10 +58,9 @@ public class Day2 : ASolution
         };
     }
 
-
-    public static Outcome GetOutcome(string input)
+    public static Outcome ParseOutcome(string value)
     {
-        return input switch
+        return value switch
         {
             "X" => Outcome.Loss,
             "Y" => Outcome.Draw,
@@ -138,23 +68,57 @@ public class Day2 : ASolution
             _ => Outcome.Unknown,
         };
     }
-}
 
-public record Round(Shape Opponent, Shape Self);
-public record RoundB(Shape Opponent, Outcome Outcome);
+    private static Outcome GetOutcome(Shape opponent, Shape self)
+    {
+        if (opponent == self)
+            return Outcome.Draw;
+
+        switch (opponent)
+        {
+            case Shape.Rock when self is Shape.Paper:
+            case Shape.Paper when self is Shape.Scissor:
+            case Shape.Scissor when self is Shape.Rock:
+                return Outcome.Win;
+        }
+
+        return Outcome.Loss;
+    }
+
+    private static Shape GetShape(Shape opponent, Outcome outcome)
+    {
+        if (outcome == Outcome.Draw)
+            return opponent;
+
+        switch (outcome)
+        {
+            case Outcome.Loss when opponent is Shape.Rock:
+            case Outcome.Win when opponent is Shape.Paper:
+                return Shape.Scissor;
+            case Outcome.Loss when opponent is Shape.Paper:
+            case Outcome.Win when opponent is Shape.Scissor:
+                return Shape.Rock;
+            case Outcome.Loss when opponent is Shape.Scissor:
+            case Outcome.Win when opponent is Shape.Rock:
+                return Shape.Paper;
+            default:
+                return Shape.Unknown;
+        }
+    }
+}
 
 public enum Shape
 {
-    Unknown,
-    Rock,
-    Paper,
-    Scissor
+    Unknown = int.MinValue,
+    Rock = 1,
+    Paper = 2,
+    Scissor = 3
 }
 
 public enum Outcome
 {
-    Unknown,
-    Win,
-    Draw,
-    Loss
+    Unknown = int.MinValue,
+    Loss = 0,
+    Draw = 3,
+    Win = 6
 }
