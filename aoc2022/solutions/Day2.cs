@@ -30,15 +30,16 @@ public record Round
         var split = input.Split(' ');
         Opponent = ParseShape(split[0]);
 
-        if (task == 'A')
+        switch (task)
         {
-            Self = ParseShape(split[1]);
-            RoundOutcome = GetOutcome(Opponent, Self);
-        }
-        else if (task == 'B')
-        {
-            RoundOutcome = ParseOutcome(split[1]);
-            Self = GetShape(Opponent, RoundOutcome);
+            case 'A':
+                Self = ParseShape(split[1]);
+                RoundOutcome = GetOutcome(Opponent, Self);
+                break;
+            case 'B':
+                RoundOutcome = ParseOutcome(split[1]);
+                Self = GetShape(Opponent, RoundOutcome);
+                break;
         }
     }
 
@@ -58,7 +59,7 @@ public record Round
         };
     }
 
-    public static Outcome ParseOutcome(string value)
+    private static Outcome ParseOutcome(string value)
     {
         return value switch
         {
@@ -74,36 +75,22 @@ public record Round
         if (opponent == self)
             return Outcome.Draw;
 
-        switch (opponent)
+        return (opponent, self) switch
         {
-            case Shape.Rock when self is Shape.Paper:
-            case Shape.Paper when self is Shape.Scissor:
-            case Shape.Scissor when self is Shape.Rock:
-                return Outcome.Win;
-        }
-
-        return Outcome.Loss;
+            (Shape.Rock, Shape.Paper) or (Shape.Paper, Shape.Scissor) or (Shape.Scissor, Shape.Rock) => Outcome.Win,
+            _ => Outcome.Loss,
+        };
     }
 
     private static Shape GetShape(Shape opponent, Outcome outcome)
     {
-        if (outcome == Outcome.Draw)
-            return opponent;
-
-        switch (outcome)
+        return (outcome, opponent) switch
         {
-            case Outcome.Loss when opponent is Shape.Rock:
-            case Outcome.Win when opponent is Shape.Paper:
-                return Shape.Scissor;
-            case Outcome.Loss when opponent is Shape.Paper:
-            case Outcome.Win when opponent is Shape.Scissor:
-                return Shape.Rock;
-            case Outcome.Loss when opponent is Shape.Scissor:
-            case Outcome.Win when opponent is Shape.Rock:
-                return Shape.Paper;
-            default:
-                return Shape.Unknown;
-        }
+            (Outcome.Loss, Shape.Rock) or (Outcome.Win, Shape.Paper) => Shape.Scissor,
+            (Outcome.Loss, Shape.Paper) or (Outcome.Win, Shape.Scissor) => Shape.Rock,
+            (Outcome.Loss, Shape.Scissor) or (Outcome.Win, Shape.Rock) => Shape.Paper,
+            _ => opponent,
+        };
     }
 }
 
