@@ -10,7 +10,7 @@ public class Day3 : ASolution
     {
         return Input
             .Select(row => row.Chunk(row.Length / 2))
-            .Select(compartments => compartments.First().Intersect(compartments.Last()).FirstOrDefault())
+            .Select(compartments => compartments.First().Intersect(compartments.Last()).Single())
             .Sum(CalculatePriority).ToString();
     }
 
@@ -18,14 +18,14 @@ public class Day3 : ASolution
     {
         return Input
             .Chunk(3)
-            .Select(group => group[0].Intersect(group[1]).Intersect(group[2]).FirstOrDefault())
+            .Select(group => group[0].Intersect(group[1]).Intersect(group[2]).Single())
             .Sum(CalculatePriority).ToString();
     }
 
     private int CalculatePriority(char c)
     {
-        return char.IsUpper(c) 
-            ? c - 'A' + 1 + 26
-            : c - 'a' + 1;
+        return (char.IsUpper(c) 
+            ? c - 'A'+ 26
+            : c - 'a') + 1 ;
     }
 }
