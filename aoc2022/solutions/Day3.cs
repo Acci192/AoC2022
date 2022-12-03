@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace aoc2022.solutions;
+﻿namespace aoc2022.solutions;
 
 public class Day3 : ASolution
 {
