@@ -14,12 +14,12 @@ public class Day4Tests
     [Fact]
     public void A()
     {
-        Solution.A().Should().Be("");
+        Solution.A().Should().Be("2");
     }
 
     [Fact]
     public void B()
     {
-        Solution.B().Should().Be("");
+        Solution.B().Should().Be("4");
     }
 }
